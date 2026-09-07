@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An exploratory, role-specific analysis of public hepatoportal focused-ultrasound clamp data prepared by Cathy Liu for the Thakor Lab.">
+  <title>Exploratory Analyses Inspired by the Thakor Lab</title>
+  <link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+  <main class="page">
+    <h1>Exploratory Analyses Inspired by the Thakor Lab</h1>
+    <div class="byline">
+      Cathy Liu · Computational and experimental biology · <a href="mailto:cathyliu014@gmail.com">cathyliu014@gmail.com</a><br>
+      Prepared for the Thakor Lab, Stanford University<br>
+      Personal exploratory project, September 2026
+    </div>
+
+    <nav class="section-nav" aria-label="Demo sections">
+      <a href="#motivation">Motivation</a>
+      <a href="#a1">Clamp audit</a>
+      <a href="#a2">Cross-model check</a>
+      <a href="#relevance">Relevance</a>
+    </nav>
+
+    <p>The Thakor Lab combines image-guided intervention, focused ultrasound and translational biology. The advertised neural-interface role extends that precision-delivery logic to periportal autonomic targets, where synchronized stimulation and physiological data have to support a defensible experimental call.</p>
+    <p>I built a small analysis over public, animal-level hepatoportal pFUS clamp data. It pairs each swine's pFUS and sham time courses, checks glucose stability and missingness, and turns adjustable rules into a transparent review queue rather than treating every apparent response as equally reliable.</p>
+
+    <hr id="motivation">
+    <section aria-labelledby="how-heading">
+      <h2 id="how-heading">How it works</h2>
+      <p>The source workbook reports glucose infusion rate (GIR) and blood glucose as percentages of each swine's baseline before and after time zero, when either pFUS or sham was applied. For a selected animal, the explorer overlays the paired traces and evaluates the 30–90 minute window. A candidate response must clear a GIR-uplift threshold, remain within a chosen mean glucose-deviation limit, and retain at least 80% of expected samples.</p>
+    </section>
+
+    <hr id="a1">
+    <section aria-labelledby="analysis-one-heading">
+      <h2 id="analysis-one-heading">Analysis 1 — Audit one matched swine experiment</h2>
+      <div class="experiment">
+        <div class="exp-label">Method</div>
+        <div class="exp-title">Matched pFUS–sham traces with an explicit review rule</div>
+        <p>Select an animal and outcome. Adjust the minimum GIR uplift and maximum glucose deviation; the plot, metrics and disposition update together. The rule is descriptive, not a significance test.</p>
+      </div>
+
+      <div class="panel">
+        <form class="searchbar" id="target-form">
+          <label class="sr-only" for="target-select">Swine experiment</label>
+          <input id="target-select" list="target-options" autocomplete="off" placeholder="e.g. Swine 3">
+          <datalist id="target-options"></datalist>
+          <button type="submit">Inspect</button>
+        </form>
+        <div class="chips" id="suggestions"><span>Try:</span></div>
+
+        <fieldset class="signal-toggle">
+          <legend>Signal</legend>
+          <label><input type="radio" name="signal" value="gir" checked> GIR</label>
+          <label><input type="radio" name="signal" value="glucose"> Blood glucose</label>
+        </fieldset>
+
+        <div class="thresholds">
+          <label for="gir-threshold">Minimum paired GIR uplift <strong><span id="gir-threshold-value">8</span> points</strong></label>
+          <input id="gir-threshold" type="range" min="0" max="25" step="1" value="8">
+          <label for="glucose-threshold">Maximum mean glucose deviation <strong><span id="glucose-threshold-value">10</span> points</strong></label>
+          <input id="glucose-threshold" type="range" min="3" max="15" step="1" value="10">
+        </div>
+
+        <svg id="hero-viz" class="viz" viewBox="0 0 600 340" role="img" aria-label="Matched pFUS and sham time-series plot"></svg>
+        <div class="legend" aria-hidden="true"><span><i class="key pfus"></i>pFUS</span><span><i class="key sham"></i>Matched sham</span><span><i class="key stimulus"></i>time zero</span></div>
+        <div class="readout" id="readout" aria-live="polite"></div>
+        <figcaption>Processed-data analysis of five matched swine experiments from Cotero et al., Fig. 3 source data. Values are percentages of baseline; the highlighted window is 30–90 min after stimulation.</figcaption>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric"><span class="metric-val" id="metric-one">13.1</span><span class="metric-desc">median paired GIR uplift, points</span></div>
+        <div class="metric"><span class="metric-val" id="metric-two">3 / 5</span><span class="metric-desc">pass the default review rule</span></div>
+        <div class="metric"><span class="metric-val" id="metric-three">—</span><span class="metric-desc" id="metric-three-label">selected experiment</span></div>
+      </div>
+
+      <div class="action-note"><strong>What this lets the lab do:</strong> separate coherent pFUS responses from experiments needing a targeting, clamp-stability or acquisition-completeness review before group-level interpretation.</div>
+      <div class="action-note"><strong>Where Cathy adds value:</strong> a reusable synchronization, QC and visualization pattern that can accept the lab's next neural, physiological and stimulation streams once their event clocks and units are defined.</div>
+    </section>
+
+    <hr id="a2">
+    <section aria-labelledby="analysis-two-heading">
+      <h2 id="analysis-two-heading">Analysis 2 — Ask whether the direction survives model changes</h2>
+      <div class="experiment">
+        <div class="exp-label">Result</div>
+        <div class="exp-title">Late-window GIR is higher with pFUS in both rat clamp models</div>
+      </div>
+      <div class="panel comparison-panel">
+        <span class="label-inline">Mean animal-level GIR, 60–120 min (mg kg⁻¹ min⁻¹)</span>
+        <div id="comparison" class="model-comparison"></div>
+      </div>
+      <p>Across the independently processed animal traces, DIO rats averaged 11.55 under pFUS versus 4.59 under sham, a difference of 6.95 mg kg⁻¹ min⁻¹. In the T1D model the corresponding means were 39.16 and 26.79, a difference of 12.37 mg kg⁻¹ min⁻¹. This does not establish a causal mechanism, but it supports carrying the response direction into a tightly synchronized periportal experiment with prespecified controls.</p>
+    </section>
+
+    <hr id="relevance">
+    <section aria-labelledby="relevance-heading">
+      <h2 id="relevance-heading">Why this matters for the lab</h2>
+      <p>Periportal neuromodulation produces several clocks at once: stimulation onset, neural activity, vascular signals and metabolic readouts. An animal-level audit makes timing, missing data and physiological stability visible before traces are pooled. The same framework can compare endovascular, ultrasound, electrophysiological or thermal perturbations without pretending that their signals are interchangeable.</p>
+
+      <h2>What I would bring</h2>
+      <p>I would bring R, Python and MATLAB analysis experience, an independent computational-neurostimulation project, and practical research habits from animal-model, IVIS, assay, QC and documentation work. I have not independently run focused-ultrasound or electrophysiology acquisitions; the value shown here is data integration and experimental reasoning that can support hands-on training.</p>
+
+      <h2>Methods note</h2>
+      <p class="methods-note"><strong>Artifact:</strong> APPLICATION_DEMO. The site uses the authors' animal-level processed values in <a href="https://www.ebi.ac.uk/biostudies/files/S-EPMC10127248/NIHMS1880127-supplement-SD_for_Fig__3.xlsx">SD for Fig. 3</a>, mirrored by <a href="https://www.ebi.ac.uk/biostudies/studies/S-EPMC10127248">BioStudies S-EPMC10127248</a>, from <a href="https://doi.org/10.1038/s41551-022-00870-w">Cotero et al. 2022</a>. The 30–90 min and 60–120 min summaries were independently calculated from non-missing values. “Pass” is an exploratory review label using adjustable descriptive thresholds; it is not a reported endpoint, inferential test or claim of clinical efficacy. The workbook does not expose raw acquisition clocks, waveforms or targeting logs, so this demo cannot test clock drift, stimulus artifacts or anatomical accuracy. The <a href="https://med.stanford.edu/profiles/avnesh-thakor">Thakor Lab profile</a> informed the role-specific framing; no verified target-owned public GitHub repository was found in the lab, PI, publication or GitHub searches completed for this project.</p>
+    </section>
+
+    <footer>
+      Cathy Liu · <a href="mailto:cathyliu014@gmail.com">cathyliu014@gmail.com</a> · <a href="tel:+14152163799">415-216-3799</a><br>
+      Epilepsy neurostimulation project, <a href="https://arxiv.org/abs/2606.04339">arXiv:2606.04339</a>
+    </footer>
+  </main>
+
+  <script src="data.js?v=2"></script>
+  <script src="app.js?v=2"></script>
+</body>
+</html>
